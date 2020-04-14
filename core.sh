@@ -3,15 +3,22 @@
 #-----------------------------------------------#
 #                   VARIAVEIS                   #
 #-----------------------------------------------#
+
 editor=nano
-#timezone=$(curl -s https://ipapi.co/timezone)
 idioma="en_US.UTF-8 UTF-8"
 teclado=us
+# detecta o time/zone automaticamente com base no IP.
+#timezone=$(curl -s https://ipapi.co/timezone)
+
+# Identifica se a instalacao e de um sistema EFI ou boot para setar as configuracoes de instalacao e configuracao do boot.
+# Se a iso for inicializada como EFI, existira o diretorio /sys/firmware/efi 
 if [ -e /sys/firmware/efi ]; then
     bootefi=/efi
 else
     bootefi=/boot
 fi
+
+# Flags usadas no particionamento
 root=false
 root_partition=none
 root_filesys=none
@@ -30,6 +37,8 @@ boot_filesys=none
 #-----------------------------------------------#
 
 ### Titulo
+# Printa um cabecalho padrao.
+# Argumento: String (60 caracteres) com o titulo da secao que o usuario esta.
 title () {
             clear
         echo ""
@@ -46,6 +55,8 @@ title () {
 }
 
 ### Mensagem de erro
+# Printa uma mensagem de erro e retorna para a janela anterior.
+# Argumento: Input do usuario.
 errormsg () {
     echo ""
     echo -e "\e[31;1mERRO: '$1' é uma opção inválida! \e[0m"
@@ -54,7 +65,7 @@ errormsg () {
 }
 
 
-### Menu principal
+### 1 Menu principal
 menu () {
     while true; do
         title "                            Menu                            "
@@ -110,7 +121,7 @@ menu () {
     done
 }
 
-### Selecao do editor de texto (padrao: nano)
+### 1>1 Selecao do editor de texto usado durante a instalacao (padrao: nano)
 editor_texto () {
     while true; do
         title "                       Editor de texto                      "
@@ -146,7 +157,7 @@ editor_texto () {
     done
 }
 
-### Selecao da timezone (padrao: localizado pelo IP)
+### 1>2 Selecao da timezone (padrao: localizado pelo IP)
 localizacao () {
     while true; do
         clear
@@ -180,11 +191,11 @@ localizacao () {
     done
 }
 
-### Selecao da timezone manual
+### 1>2>2 Selecao da timezone manual
 timezone_manual () {
     while true; do 
         clear
-        title "                    Localização / Manual                    "
+        title "                    Localização - Manual                    "
         echo -e "Digite uma localização (\e[1mZona/Subzona\e[0m) ou 0 para sair: "
         echo "ex: America/Sao_Paulo"
         echo ""
