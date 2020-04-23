@@ -1,4 +1,5 @@
 #!/bin/bash
+# https://bit.ly/2RMBQL4
 
 #-----------------------------------------------#
 #                   VARIAVEIS                   #
@@ -65,7 +66,7 @@ errormsg () {
 }
 
 
-### 1 Menu principal
+### Menu principal
 menu () {
     while true; do
         title "                            Menu                            "
@@ -76,7 +77,6 @@ menu () {
         echo -e "      \e[1m5\e[0m - Mirrorlist"
         echo -e "      \e[1m6\e[0m - Particionamento"
         echo -e "      \e[1m7\e[0m - Instalação"
-        echo -e "      \e[1m8\e[0m - Configurar sistema"
         echo -e ""        
         echo -e "      \e[1m0\e[0m - Sair"
         echo -e ""
@@ -103,10 +103,7 @@ menu () {
                 ;;                
             7)
                 instalacao
-                ;;
-            8)
-                config
-                ;;                            
+                ;;                          
             0)
                 echo ""
                 echo "Saindo..."
@@ -121,7 +118,7 @@ menu () {
     done
 }
 
-### 1>1 Selecao do editor de texto usado durante a instalacao (padrao: nano)
+### 1 Selecao do editor de texto usado durante a instalacao (padrao: nano)
 editor_texto () {
     while true; do
         title "                       Editor de texto                      "
@@ -157,7 +154,7 @@ editor_texto () {
     done
 }
 
-### 1>2 Selecao da timezone (padrao: localizado pelo IP)
+### 2 Selecao da timezone (padrao: localizado pelo IP)
 localizacao () {
     while true; do
         clear
@@ -191,7 +188,8 @@ localizacao () {
     done
 }
 
-### 1>2>2 Selecao da timezone manual
+### 2>2 Selecao da timezone manual
+# O usuario precisa indicar a regiao e subregiao
 timezone_manual () {
     while true; do 
         clear
@@ -216,7 +214,8 @@ timezone_manual () {
     done
 }
 
-### Selecao do idioma do sistema (padrao: us)
+### 3 Selecao do idioma do sistema (padrao: us)
+# Por enquanto so US e pt_BR
 idioma_sys () {
     while true; do
         clear
@@ -256,7 +255,7 @@ idioma_sys () {
     done
 }
 
-### Selecao do layout do teclado (padrao: us)
+### 4 Selecao do layout do teclado (padrao: us)
 keyboard () {
     while true; do
         clear
@@ -305,7 +304,8 @@ keyboard () {
         esac
     done
 }
-
+# 4>4 Permite selecionar manualmente o padrao do teclado.
+# Usuario precisa digitar corretamente o padrao a ser definido.
 keyboard_outro () {
     while true; do
     clear
@@ -327,7 +327,7 @@ keyboard_outro () {
     done
 }
 
-### Configuracao do mirrorlist (padrao: original do sistema)
+### 5 Configuracao do mirrorlist (padrao: original do sistema)
 mirrorlist () {
     while true; do
         clear
@@ -374,15 +374,15 @@ mirrorlist () {
     done
 }
 
-### Criação e montagem das partições
-
+### 6 Criação e montagem das partições
 particionamento () {
     while true; do
         clear
         title "                       Particionamento                      "
-        echo -e "      \e[1m1\e[0m - Visualizar tabela de partição"
+        echo -e "      \e[1m1\e[0m - Visualizar tabela de partição atual"
         echo -e "      \e[1m2\e[0m - Modificar tabela de partição"
         echo -e "      \e[1m3\e[0m - Montar/formatar partições"
+        echo -e "      \e[1m4\e[0m - Resetar pontos de montagem"
         echo ""
         echo -e "      \e[1m0\e[0m - Voltar"
         read -s -n1 op_particao
@@ -396,6 +396,9 @@ particionamento () {
             3)
                 ponto_montagem
                 ;;
+            4)
+                reset_ponto_montagem
+                ;;
             0)
                 break
                 ;;
@@ -405,6 +408,7 @@ particionamento () {
     done
 }
 
+### 6>1 Exibe na tela a tabela de particao atual do sistema
 tabela_particao () {
     clear
     title "                     Tabela de Partição                     "
@@ -414,10 +418,12 @@ tabela_particao () {
     read -n1 -s -r -p "Aperte qualquer tecla para voltar."
 }
 
+### 6>2 Lista os dispositivos de armazenamento disponiveis onde o usuario
+###     pode escolher qual deseja modificar a tabela de particao.
 modificar_tabela_particao () {
     while true; do
         clear
-        title "       Particionamento / Modificar tabela de partição       "
+        title "                Modificar tabela de partição                "
         declare -a dispositivos=();
         mapfile -t dispositivos < <(lsblk -d -n -l -o NAME | grep "sd.");
         option=0
@@ -442,6 +448,7 @@ modificar_tabela_particao () {
     done
 }
 
+### 6>2>n Informa o dispositivo selecionado e executa o CFdisk.
 op_modificar_dispositivo () {
     if [ $op_dispositivo != 0 ]; then
         echo ""
@@ -452,10 +459,13 @@ op_modificar_dispositivo () {
     fi
 }
 
+# 6 > 3 - Inicia a configuracao das particoes pela escolha dos pontos de montagem.
+#         OBS: Nenhuma auteracao e feita aqui! Apenas sao determinados 
+#         os parametros para montagem e formatacao das particoes.
 ponto_montagem () {
     while true; do
     clear
-    title "         Particionamento / Montar/formatar partições        "
+    title "                  Montar/formatar partições                 "
     pontos=(/ $bootefi /home swap)
     echo -e "      \e[1mSelecione um ponto de montagem: \e[0m"
     echo ""
@@ -480,22 +490,24 @@ ponto_montagem () {
     done
 }
 
+# 6 > 3 > n - Lista as particoes disponiveis para que o usuario escolha 
+#             onde montar o ponto de montagem escolhido na tela anterior
 partition () {
     while true; do
         clear
-        title "         Particionamento / Montar/formatar partições        "
+        title "                  Montar/formatar partições                 "
         echo -e "      \e[1mSelecione uma partição para montar o $1\e[0m:"
         echo ""
         declare -a particoes=();
         mapfile -t particoes < <(lsblk -n -l -o NAME | grep "sd..");
-        option=0
+        option=1
         cont=0
         for particao in ${particoes[@]}; do
             cont=$(($cont + 1))
             echo -e "      \e[1m$cont\e[0m - $particao"
             option+="|$cont"
         done
-        echo "$option"
+        #echo "$option"
         echo ""
         echo -e "      \e[1m0\e[0m - Voltar"
         read -s -n1 op_particao
@@ -506,11 +518,14 @@ partition () {
                         echo -e "Swap sera montado em ${particoes[op_particao-1]}"
                         swap=true
                         swap_partition=${particoes[op_particao-1]}
-                        sleep 2
+                        sleep 4
                         break
                     elif [ $op_particao != 0 ]; then
                         filesystem
                     fi
+                break
+                ;;
+            0)
                 break
                 ;;
             *)
@@ -520,12 +535,13 @@ partition () {
     done
 }
 
+# 6 > 3 > n > 1 - Selecao do sistema de arquivo para formatar a particao
 filesystem () {
     while true; do
     clear
-    title "         Particionamento / Montar/formatar partições        "
+    title "                  Montar/formatar partições                 "
     filesys_types=(Não_formatar btrfs ext2 ext3 ext4 f2fs jfs nilfs2 ntfs reiserfs vfat xfs)
-    echo -e "      \e[1mSelecione um Sistemas de arquivos para formatar\e[0m"
+    echo -e "      \e[1mSelecione um sistemas de arquivos para formatar\e[0m"
     echo -e "      \e[1ma partição ${particoes[$op_particao-1]}\e[0m"
     echo ""
     cont=0
@@ -538,6 +554,7 @@ filesystem () {
     read -s -n1 op_filesys_type
     case $op_filesys_type in
         1|2|3|4|5|6|7|8|9|10|11|12)
+            # Gera os parametros para cada ponto de montagem
             if [ "$op_ponto" == 1 ]; then
                 root=true
                 root_partition=${particoes[$op_particao-1]}
@@ -563,6 +580,41 @@ filesystem () {
 
 }
 
+# 6 > 4 - Reseta toda a configuracao dos pontos de montagem feita na opção '6 > 3'.
+reset_ponto_montagem () {
+    clear
+    title "                 Resetar pontos de montagem                 "
+    echo -e "      \e[1mAs configurações dos pontos de montagem realizadas na sessão"
+    echo -e "      anterior serão apagadas! Deseja continuar?\e[0m"
+    echo ""
+    echo -e "      \e[1m1\e[0m - Sim"
+    echo ""
+    echo -e "      \e[1m0\e[0m - Voltar"
+    read -s -n1 op_reset_ponto_montagem
+    case $op_reset_ponto_montagem in
+        1)
+            root=false
+            root_partition=none
+            root_filesys=none
+            swap=false
+            swap_partition=none
+            home=false
+            home_partition=none
+            home_filesys=none
+            boot=false
+            boot_partition=none
+            boot_filesys=none
+            break
+            ;;
+        0)
+            break
+            ;;
+        *)
+            errormsg $op_filesys_type
+        esac
+}
+
+# 7 - Relativo a instalacao do sistema
 instalacao () {
     while true; do
         clear
@@ -592,17 +644,7 @@ instalacao () {
     done
 }
 
-alerta_root () {
-    clear
-    title "                    Instalar Arch Linux                     "
-    echo -e "\e[31;1mALERTA: O ponto de montagem / é obrigatório!!!\e[0m"
-    echo -e "\e[1mVolte ao menu inicial e use a opção 6 (Particionamento)\npara configura-lo.\e[0m"
-    echo ""
-    echo "Aperte qualquer tecla para voltar"
-    read -s -n1
-    break
-}
-
+# 7 > 1 - Mostra relatorio da do que foi configurado ate entao.
 revisao () {
     clear
     title "                    Revisão da instalação                   "
@@ -631,31 +673,99 @@ revisao () {
     read -s -n1
     break
 }
+# 7 > 2 > a - Mostra aviso se o root não foi setado.
+alerta_root () {
+    clear
+    title "                    Instalar Arch Linux                     "
+    echo -e "\e[31;1mALERTA: O ponto de montagem / é obrigatório!!!\e[0m"
+    echo -e ""
+    echo -e "\e[1mVolte ao menu inicial e use a opção 6 (Particionamento).e[0m"
+    echo ""
+    echo "Aperte qualquer tecla para voltar"
+    read -s -n1
+    break
+}
+
+# 7 > 2 > b - Faz a instalacao do sistema
 install () {
-    
-    
-        mkfs.$root_filesys -L "arch_linux" /dev/$root_partition
-        mount /dev/$root_partition /mnt
-        if $home; then
-            mkfs.$home_filesys -L "home" /dev/$home_partition
-            mkdir /mnt/home && mount /dev/$home_partition /mnt/home
-        fi
-        if $boot; then
-            mkfs.fat -F32 /dev/$boot_partition
-            mkdir -p /mnt$bootefi && mount /dev/$boot_partition /mnt$bootefi
-        fi
-        if $swap; then
-            mkswap -L "Swap" /dev/$swap_partition && swapon /dev/$swap_partition
-        fi
-        # Atualizar os mirrors
-        pacman -Syu --noconfirm pacman-mirrorlist
-        # Instalando o sistema
-        pacstrap /mnt base base-devel
-        # Gerarando o arquivo fstab
-        genfstab -U -p /mnt >> /mnt/etc/fstab
-        # Saindo da iso de instalação e logando no sistema instalado como root
-        mkdir /mnt/FALI && cp ./core.sh /mnt/FALI
-        arch-chroot /mnt ./mnt/FALI/core.sh
+    # Montagem e formatacao das particoes
+    mkfs.$root_filesys -L "arch_linux" /dev/$root_partition
+    mount /dev/$root_partition /mnt
+    if $home; then
+    mkfs.$home_filesys -L "home" /dev/$home_partition
+    mkdir /mnt/home && mount /dev/$home_partition /mnt/home
+    fi
+    if $boot; then
+    mkfs.fat -F32 /dev/$boot_partition
+    mkdir -p /mnt$bootefi && mount /dev/$boot_partition /mnt$bootefi
+    fi
+    if $swap; then
+    mkswap -L "Swap" /dev/$swap_partition && swapon /dev/$swap_partition
+    fi
+    # Atualizar os mirrors
+    pacman -Syu --noconfirm pacman-mirrorlist
+    # Instalando o sistema
+    pacstrap /mnt base base-devel
+    # Gerarando o arquivo fstab
+    genfstab -U -p /mnt >> /mnt/etc/fstab
+    # Copiando script para dentro do sistema instalado
+    mkdir /mnt/FALI && cp ./core.sh /mnt/FALI
+    # Saindo da iso de instalação e logando no sistema instalado como root
+    arch-chroot /mnt ./FALI/core.sh
+}
+
+### Menu de pos instalacao
+menu_pos () {
+    while true; do
+        title "                       Pós instalação                       "
+        echo -e "O sistema base foi instalado com sucesso!"
+        echo -e "Estamos realizando algumas configuraçõe, aguarde um momento_"
+        echo -e "      \e[1m1\e[0m - Editor de Texto"
+        echo -e "      \e[1m2\e[0m - Localização"
+        echo -e "      \e[1m3\e[0m - Idioma do sistema"
+        echo -e "      \e[1m4\e[0m - Teclado"
+        echo -e "      \e[1m5\e[0m - Mirrorlist"
+        echo -e "      \e[1m6\e[0m - Particionamento"
+        echo -e "      \e[1m7\e[0m - Instalação"
+        echo -e ""        
+        echo -e "      \e[1m0\e[0m - Sair"
+        echo -e ""
+        echo -e "      \e[1mInforme uma opção:\e[0m"
+        read -s -n 1 op_menu
+        case "$op_menu" in
+            1)
+                editor_texto
+                ;;
+            2)
+                localizacao
+                ;;
+            3)
+                idioma_sys
+                ;;
+            4)
+                keyboard
+                ;;
+            5)
+                mirrorlist
+                ;;
+            6)
+                particionamento
+                ;;                
+            7)
+                instalacao
+                ;;                          
+            0)
+                echo ""
+                echo "Saindo..."
+                sleep 2
+                clear
+                break
+                ;;
+            *)
+                echo ""
+                errormsg "'$op_menu' é uma opção inválida!"
+        esac
+    done
 }
 
 #-----------------------------------------------#
@@ -663,9 +773,14 @@ install () {
 #-----------------------------------------------#
 
 ### Idendifica a localizacao com base no IP
-#timezone=$(curl -s https://ipapi.co/timezone)
+timezone=$(curl -s https://ipapi.co/timezone)
 
 ### Faz copia do mirrorlist
 cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.original
 ### Inicia o menu principal
-menu
+if [ -e /mnt/FALI/core.sh ]; then
+    menu_pos
+else
+    menu
+fi
+
