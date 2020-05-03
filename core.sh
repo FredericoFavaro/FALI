@@ -13,7 +13,7 @@ teclado=us
 
 # Identifica se a instalacao e de um sistema EFI ou boot para setar as configuracoes de instalacao e configuracao do boot.
 # Se a iso for inicializada como EFI, existira o diretorio /sys/firmware/efi 
-if [ -e /sys/firmware/efi ]; then
+if [ -e /sys/firmware/efi/efivars ]; then
     bootefi=/efi
 else
     bootefi=/boot
@@ -718,55 +718,63 @@ install () {
 menu_pos () {
     while true; do
         title "                       Pós instalação                       "
-        echo -e "O sistema base foi instalado com sucesso!"
-        echo -e "Estamos realizando algumas configuraçõe, aguarde um momento_"
-        echo -e "      \e[1m1\e[0m - Editor de Texto"
-        echo -e "      \e[1m2\e[0m - Localização"
-        echo -e "      \e[1m3\e[0m - Idioma do sistema"
-        echo -e "      \e[1m4\e[0m - Teclado"
-        echo -e "      \e[1m5\e[0m - Mirrorlist"
-        echo -e "      \e[1m6\e[0m - Particionamento"
-        echo -e "      \e[1m7\e[0m - Instalação"
-        echo -e ""        
-        echo -e "      \e[1m0\e[0m - Sair"
-        echo -e ""
-        echo -e "      \e[1mInforme uma opção:\e[0m"
-        read -s -n 1 op_menu
-        case "$op_menu" in
-            1)
-                editor_texto
-                ;;
-            2)
-                localizacao
-                ;;
-            3)
-                idioma_sys
-                ;;
-            4)
-                keyboard
-                ;;
-            5)
-                mirrorlist
-                ;;
-            6)
-                particionamento
-                ;;                
-            7)
-                instalacao
-                ;;                          
-            0)
-                echo ""
-                echo "Saindo..."
-                sleep 2
-                clear
-                break
-                ;;
-            *)
-                echo ""
-                errormsg "'$op_menu' é uma opção inválida!"
-        esac
+        echo ""
+        echo -e "O sistema foi instalado!"
+        echo -e "Estamos realizando algumas configuraçõe, aguarde um momento"
+        sleep 2
+        echo -e "Chegando chaves do sistema"
+        pacman-key --init && pacman-key --populate archlinux
+        # Idioma do sistema
+        idioma="en_US.UTF-8 UTF-8" #definir com base em arquivo de config
+        if [ $idioma != "en_US.UTF-8 UTF-8" ]; then
+            sed -i "s/#pt_BR.UTF-8/pt_BR.UTF-8/" /etc/locale.gen
+            locale-gen > /dev/null 2>&1
+            echo LANG=pt_BR.UTF-8 > /etc/locale.conf
+            export LANG=pt_BR.UTF-8 > /dev/null 2>&1
+            idioma="pt_BR.UTF-8 UTF-8"
+        fi
+        echo -e "Definindo \e[1m$idioma\e[0m como idoma do sistema!"
+        # Layout de teclado
+        echo KEYMAP=br-abnt2 > /etc/vconsole.conf
+        # Fuso horario do sistema
+        ln -sf /usr/share/zoneinfo/America/Recife /etc/localtime
+        # Sincronizando o relogio do hardware com o do sistema
+        hwclock --systohc --utc
+        # Hostname
+        echo nome_da_maquina > /etc/hostname
+        # Instalacao kernel LTS
+        #pacman -S linux-lts
+        #mkinitcpio -p linux
+        
+        # Instalacao do bootloader
+        #pacman -Syu grub efibootmgr
+        #grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id="Arch linux" --recheck /dev/sda
+        #grub-mkconfig -o /boot/grub/grub.cfg  #Gera arquivo de configuracao do grub
+        
+        # Suporte repositorios 86x
+        #nano /etc/pacman.conf
+        #Descomentar Multilib
+        #pacman -Syy
+        #pacman -Syu
+        
+        #reboot
+
     done
 }
+
+### FAZER MENU
+# Instalar wifi
+#pacman -S wireless_tools wpa_supplicant wpa_actiond dialog
+# Criar senha para usuário root:
+#passwd
+
+# Dual boot
+# pacman -Syu os-prober
+# grub-mkconfig -o /boot/grub/grub.cfg
+
+
+
+
 
 #-----------------------------------------------#
 #                   APLICACAO                   #
