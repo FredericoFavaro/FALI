@@ -5,33 +5,34 @@
 #                   VARIAVEIS                   #
 #-----------------------------------------------#
 
-editor=nano
-idioma="en_US.UTF-8 UTF-8"
-teclado=us
-# detecta o time/zone automaticamente com base no IP.
-#timezone=$(curl -s https://ipapi.co/timezone)
+variaveis_config () {
+    editor=nano
+    idioma="en_US.UTF-8 UTF-8"
+    teclado=us
+    # detecta o time/zone automaticamente com base no IP.
+    timezone=$(curl -s https://ipapi.co/timezone)
 
-# Identifica se a instalacao e de um sistema EFI ou boot para setar as configuracoes de instalacao e configuracao do boot.
-# Se a iso for inicializada como EFI, existira o diretorio /sys/firmware/efi 
-if [ -e /sys/firmware/efi/efivars ]; then
-    bootefi=/efi
-else
-    bootefi=/boot
-fi
+    # Identifica se a instalacao e de um sistema EFI ou boot para setar as configuracoes de instalacao e configuracao do boot.
+    # Se a iso for inicializada como EFI, existira o diretorio /sys/firmware/efi 
+    if [ -e /sys/firmware/efi/efivars ]; then
+        bootefi=/boot/efi
+    else
+        bootefi=/boot
+    fi
 
-# Flags usadas no particionamento
-root=false
-root_partition=none
-root_filesys=none
-swap=false
-swap_partition=none
-home=false
-home_partition=none
-home_filesys=none
-boot=false
-boot_partition=none
-boot_filesys=none
-
+    # Flags usadas no particionamento
+    root=false
+    root_partition=none
+    root_filesys=none
+    swap=false
+    swap_partition=none
+    home=false
+    home_partition=none
+    home_filesys=none
+    boot=false
+    boot_partition=none
+    boot_filesys=none
+}
 
 #-----------------------------------------------#
 #                    FUNCOES                    #
@@ -671,7 +672,7 @@ revisao () {
     echo ""
     echo "Aperte qualquer tecla para voltar"
     read -s -n1
-    break
+    return
 }
 # 7 > 2 > a - Mostra aviso se o root não foi setado.
 alerta_root () {
@@ -710,17 +711,33 @@ install () {
     genfstab -U -p /mnt >> /mnt/etc/fstab
     # Copiando script para dentro do sistema instalado
     mkdir /mnt/FALI && cp ./core.sh /mnt/FALI
+    # Criando arquivo de configuracao
+    pos_config_file > /mnt/FALI/config2
     # Saindo da iso de instalação e logando no sistema instalado como root
     arch-chroot /mnt ./FALI/core.sh
 }
 
+# Cria arquivo com as informaçoes dadas pelo usuário no inicio da instalação que será usado para setar a configuração depois que o sistema for instalado.
+pos_config_file () {
+    echo "Idioma:"
+    echo "$idioma"
+    echo "Teclado:"
+    echo "$teclado"
+    echo "Timezone:"
+    echo "$timezone"
+    echo "Boot:"
+    echo "$bootefi"
+    echo "Partição do boot:"
+    echo "$boot_partition"
+}
+
 ### Menu de pos instalacao
-menu_pos () {
+pos_install () {
     while true; do
         title "                       Pós instalação                       "
         echo ""
         echo -e "O sistema foi instalado!"
-        echo -e "Estamos realizando algumas configuraçõe, aguarde um momento"
+        echo -e "Estamos realizando algumas configurações, aguarde um momento"
         sleep 2
         echo -e "Chegando chaves do sistema"
         pacman-key --init && pacman-key --populate archlinux
@@ -735,32 +752,37 @@ menu_pos () {
         fi
         echo -e "Definindo \e[1m$idioma\e[0m como idoma do sistema!"
         # Layout de teclado
-        echo KEYMAP=br-abnt2 > /etc/vconsole.conf
+        teclado=$(sed -n '4p' ./FALI/config)
+        echo KEYMAP=$teclado > /etc/vconsole.conf
         # Fuso horario do sistema
-        ln -sf /usr/share/zoneinfo/America/Recife /etc/localtime
+        timezone=$(sed -n '6p' ./FALI/config)
+        ln -sf /usr/share/zoneinfo/$timezone /etc/localtime
         # Sincronizando o relogio do hardware com o do sistema
         hwclock --systohc --utc
         # Hostname
-        echo nome_da_maquina > /etc/hostname
-        # Instalacao kernel LTS
-        #pacman -S linux-lts
-        #mkinitcpio -p linux
-        
+        #echo nome_da_maquina > /etc/hostname
         # Instalacao do bootloader
-        #pacman -Syu grub efibootmgr
-        #grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id="Arch linux" --recheck /dev/sda
-        #grub-mkconfig -o /boot/grub/grub.cfg  #Gera arquivo de configuracao do grub
+        if [ $bootefi == "/boot/efi" ]; then
+            pacman -Syu grub efibootmgr
+            grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id="Arch linux" --removable
+        else
+            pacman -Syu grub
+            grub_disk=$(sed -n '10s/.//4;10p' ./FALI/config)
+            grub-install --target=i386-pc /dev/"$grub_disk"
+        fi
+        grub-mkconfig -o /boot/grub/grub.cfg  #Gera arquivo de configuracao do grub
         
-        # Suporte repositorios 86x
-        #nano /etc/pacman.conf
-        #Descomentar Multilib
-        #pacman -Syy
-        #pacman -Syu
+        echo "tudo instalado e pronto!!! :)"
+        sleep 10
+        break
+        
         
         #reboot
+        #Remover arquivos
 
     done
 }
+
 
 ### FAZER MENU
 # Instalar wifi
@@ -772,7 +794,11 @@ menu_pos () {
 # pacman -Syu os-prober
 # grub-mkconfig -o /boot/grub/grub.cfg
 
-
+# Suporte repositorios 86x
+        #nano /etc/pacman.conf
+        #Descomentar Multilib
+        #pacman -Syy
+        #pacman -Syu
 
 
 
@@ -780,15 +806,14 @@ menu_pos () {
 #                   APLICACAO                   #
 #-----------------------------------------------#
 
-### Idendifica a localizacao com base no IP
-timezone=$(curl -s https://ipapi.co/timezone)
-
 ### Faz copia do mirrorlist
-cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.original
+#cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.original
 ### Inicia o menu principal
 if [ -e /mnt/FALI/core.sh ]; then
-    menu_pos
+    pos_install
 else
+    variaveis_config
+    cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.original
     menu
 fi
 
