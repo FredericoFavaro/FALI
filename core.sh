@@ -811,7 +811,7 @@ pos_install () {
 ### Faz copia do mirrorlist
 #cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.original
 ### Inicia o menu principal trocar por ./FALI/core.sh
-if [ -e /mnt/FALI/core.sh ]; then
+if [ -e /FALI/core.sh ]; then
     pos_install
 else
     variaveis_config
