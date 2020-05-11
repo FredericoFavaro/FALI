@@ -1,8 +1,4 @@
 #!/bin/bash
-https://drive.google.com/open?id=1Drv34MOeY_fXnAIfoYU5Tkl11kU-haGB > core.sh
-
-wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1Drv34MOeY_fXnAIfoYU5Tkl11kU-haGB' -O core.sh
-# https://bit.ly/2Lk4mjG
 
 #-----------------------------------------------#
 #                   VARIAVEIS                   #
