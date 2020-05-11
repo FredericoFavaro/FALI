@@ -1,5 +1,8 @@
 #!/bin/bash
-# https://bit.ly/2RMBQL4
+https://drive.google.com/open?id=1Drv34MOeY_fXnAIfoYU5Tkl11kU-haGB > core.sh
+
+wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1Drv34MOeY_fXnAIfoYU5Tkl11kU-haGB' -O core.sh
+# https://bit.ly/2Lk4mjG
 
 #-----------------------------------------------#
 #                   VARIAVEIS                   #
@@ -44,12 +47,12 @@ variaveis_config () {
 title () {
             clear
         echo ""
-        echo -e "                 ███████  █████  ██      ██"
-        echo -e "                 ██      ██   ██ ██      ██"
-        echo -e "                 █████   ███████ ██      ██"
-        echo -e "                 ██      ██   ██ ██      ██"
-        echo -e "                 ██      ██   ██ ███████ ██" 
-        echo -e "                 \e[1mFred's Arch Linux Instaler\e[0m"
+        echo -e "                 ███████  ██████  ██      ██"
+        echo -e "                 ██      ██    ██ ██      ██"
+        echo -e "                 █████   ████████ ██      ██"
+        echo -e "                 ██      ██    ██ ██      ██"
+        echo -e "                 ██      ██    ██ ███████ ██" 
+        echo -e "                 \e[1mFred's Arch Linux Installer\e[0m"
         echo ""
         # 60 caracteres maximo
         echo -e "\e[1;7m$1\e[0m"
@@ -712,9 +715,9 @@ install () {
     # Copiando script para dentro do sistema instalado
     mkdir /mnt/FALI && cp ./core.sh /mnt/FALI
     # Criando arquivo de configuracao
-    pos_config_file > /mnt/FALI/config2
+    pos_config_file > /mnt/FALI/config
     # Saindo da iso de instalação e logando no sistema instalado como root
-    arch-chroot /mnt ./FALI/core.sh
+    arch-chroot /mnt bash ./FALI/core.sh
 }
 
 # Cria arquivo com as informaçoes dadas pelo usuário no inicio da instalação que será usado para setar a configuração depois que o sistema for instalado.
@@ -728,7 +731,11 @@ pos_config_file () {
     echo "Boot:"
     echo "$bootefi"
     echo "Partição do boot:"
-    echo "$boot_partition"
+    if [[ $boot_partition == "none" ]]; then
+        echo "$root_partition"
+    else
+        echo "$boot_partition"
+    fi
 }
 
 ### Menu de pos instalacao
@@ -742,27 +749,26 @@ pos_install () {
         echo -e "Chegando chaves do sistema"
         pacman-key --init && pacman-key --populate archlinux
         # Idioma do sistema
-        idioma="en_US.UTF-8 UTF-8" #definir com base em arquivo de config
-        if [ $idioma != "en_US.UTF-8 UTF-8" ]; then
+        idioma=$(sed -n '2p' ./FALI/config)
+        if [[ $idioma != "en_US.UTF-8 UTF-8" ]]; then
             sed -i "s/#pt_BR.UTF-8/pt_BR.UTF-8/" /etc/locale.gen
             locale-gen > /dev/null 2>&1
             echo LANG=pt_BR.UTF-8 > /etc/locale.conf
             export LANG=pt_BR.UTF-8 > /dev/null 2>&1
-            idioma="pt_BR.UTF-8 UTF-8"
         fi
         echo -e "Definindo \e[1m$idioma\e[0m como idoma do sistema!"
         # Layout de teclado
         teclado=$(sed -n '4p' ./FALI/config)
-        echo KEYMAP=$teclado > /etc/vconsole.conf
+        echo KEYMAP="$teclado" > /etc/vconsole.conf
         # Fuso horario do sistema
         timezone=$(sed -n '6p' ./FALI/config)
-        ln -sf /usr/share/zoneinfo/$timezone /etc/localtime
+        ln -sf /usr/share/zoneinfo/"$timezone" /etc/localtime
         # Sincronizando o relogio do hardware com o do sistema
         hwclock --systohc --utc
         # Hostname
         #echo nome_da_maquina > /etc/hostname
         # Instalacao do bootloader
-        if [ $bootefi == "/boot/efi" ]; then
+        if [[ $bootefi == "/boot/efi" ]]; then
             pacman -Syu grub efibootmgr
             grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id="Arch linux" --removable
         else
@@ -808,7 +814,7 @@ pos_install () {
 
 ### Faz copia do mirrorlist
 #cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.original
-### Inicia o menu principal
+### Inicia o menu principal trocar por ./FALI/core.sh
 if [ -e /mnt/FALI/core.sh ]; then
     pos_install
 else
