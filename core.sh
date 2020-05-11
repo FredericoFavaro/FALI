@@ -709,11 +709,11 @@ install () {
     # Gerarando o arquivo fstab
     genfstab -U -p /mnt >> /mnt/etc/fstab
     # Copiando script para dentro do sistema instalado
-    mkdir /mnt/FALI && cp ./core.sh /mnt/FALI
+    mkdir /mnt/FALI && cp ./core.sh /mnt/FALI/core_pos.sh
     # Criando arquivo de configuracao
     pos_config_file > /mnt/FALI/config
     # Saindo da iso de instalação e logando no sistema instalado como root
-    arch-chroot /mnt bash ./FALI/core.sh
+    arch-chroot /mnt bash ./FALI/core_pos.sh
 }
 
 # Cria arquivo com as informaçoes dadas pelo usuário no inicio da instalação que será usado para setar a configuração depois que o sistema for instalado.
@@ -811,7 +811,7 @@ pos_install () {
 ### Faz copia do mirrorlist
 #cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.original
 ### Inicia o menu principal trocar por ./FALI/core.sh
-if [ -e /FALI/core.sh ]; then
+if [ -e ./FALI/core_pos.sh ]; then
     pos_install
 else
     variaveis_config
