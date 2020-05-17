@@ -705,7 +705,7 @@ install () {
     # Atualizar os mirrors
     pacman -Syu --noconfirm pacman-mirrorlist
     # Instalando o sistema
-    pacstrap /mnt base base-devel
+    pacstrap /mnt base base-devel linux linux-firmware $editor
     # Gerarando o arquivo fstab
     genfstab -U -p /mnt >> /mnt/etc/fstab
     # Copiando script para dentro do sistema instalado
@@ -764,7 +764,7 @@ pos_install () {
         # Hostname
         #echo nome_da_maquina > /etc/hostname
         # Instalacao do bootloader
-        if [[ $bootefi == "/boot/efi" ]]; then
+        if [[ $bootefi == "/boot/efi" ]]; then #ajustar
             pacman -Syu grub efibootmgr
             grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id="Arch linux" --removable
         else
@@ -773,15 +773,15 @@ pos_install () {
             grub-install --target=i386-pc /dev/"$grub_disk"
         fi
         grub-mkconfig -o /boot/grub/grub.cfg  #Gera arquivo de configuracao do grub
-        
-        echo "tudo instalado e pronto!!! :)"
-        sleep 10
-        break
-        
-        
-        #reboot
-        #Remover arquivos
-
+        # Criar senha para usuário root:
+        echo "Informe uma senha para o usuário \e[1mRoot\e[0m:"
+        passwd
+        echo "Tudo instalado e pronto!!! :)"
+        sleep 1
+        echo "O computador será reiniciado!"
+        echo "Se tudo tiver corrido bem com a instalação, o sitema deverá iniciar sem problemas!"
+        sleep 2
+        exit
     done
 }
 
@@ -789,8 +789,7 @@ pos_install () {
 ### FAZER MENU
 # Instalar wifi
 #pacman -S wireless_tools wpa_supplicant wpa_actiond dialog
-# Criar senha para usuário root:
-#passwd
+
 
 # Dual boot
 # pacman -Syu os-prober
@@ -813,6 +812,8 @@ pos_install () {
 ### Inicia o menu principal trocar por ./FALI/core.sh
 if [ -e ./FALI/core_pos.sh ]; then
     pos_install
+    umount -R /mnt
+    reboot
 else
     variaveis_config
     cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.original
