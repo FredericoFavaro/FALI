@@ -703,7 +703,7 @@ install () {
     mkswap -L "Swap" /dev/$swap_partition && swapon /dev/$swap_partition
     fi
     # Atualizar os mirrors
-    pacman -Syu --noconfirm pacman-mirrorlist
+   # pacman -Syu --noconfirm pacman-mirrorlist
     # Instalando o sistema
     pacstrap /mnt base base-devel linux linux-firmware $editor
     # Gerarando o arquivo fstab
