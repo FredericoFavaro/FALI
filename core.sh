@@ -631,6 +631,8 @@ instalacao () {
             2)
                 if $root; then
                     install
+                    umount -R /mnt
+                    reboot
                 else
                     alerta_root
                 fi
@@ -683,7 +685,7 @@ alerta_root () {
     echo ""
     echo "Aperte qualquer tecla para voltar"
     read -s -n1
-    break
+    return
 }
 
 # 7 > 2 > b - Faz a instalacao do sistema
@@ -774,13 +776,13 @@ pos_install () {
         fi
         grub-mkconfig -o /boot/grub/grub.cfg  #Gera arquivo de configuracao do grub
         # Criar senha para usuário root:
-        echo "Informe uma senha para o usuário \e[1mRoot\e[0m:"
+        echo -e "Informe uma senha para o usuário \e[1mRoot\e[0m:"
         passwd
         echo "Tudo instalado e pronto!!! :)"
         sleep 1
         echo "O computador será reiniciado!"
         echo "Se tudo tiver corrido bem com a instalação, o sitema deverá iniciar sem problemas!"
-        sleep 2
+        sleep 3
         exit
     done
 }
@@ -807,13 +809,9 @@ pos_install () {
 #                   APLICACAO                   #
 #-----------------------------------------------#
 
-### Faz copia do mirrorlist
-#cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.original
 ### Inicia o menu principal trocar por ./FALI/core.sh
 if [ -e ./FALI/core_pos.sh ]; then
     pos_install
-    umount -R /mnt
-    reboot
 else
     variaveis_config
     cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.original
