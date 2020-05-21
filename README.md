@@ -1,19 +1,28 @@
 # Fred's Arch Linux Installer
 
-------
 
 Script interativo, em português do Brasil, que possibilita instalar o Arch Linux de forma pratica e rápida, sem a necessidade de ficar digitando comandos e configurando tudo manualmente. :)
 
 **Índice**
 
-1. [Antes de começar](#Antes de começar)
-2. [Instalação](#Instalação)
-3. [Execução](#Execução)
-4. [O que será instalado](#O-que-será-instalado)
-5. [Features](#Features)
-6. [Features em implementação](#Features-em-implementação)
-7. [Licença](#Licença)
-8. [Agradecimentos](#Agradecimentos)
+- [Fred's Arch Linux Installer](#freds-arch-linux-installer)
+  - [Antes de começar](#antes-de-começar)
+    - [Sistema x64](#sistema-x64)
+    - [ISO do Arch Linux](#iso-do-arch-linux)
+    - [Mídia bootavel](#mídia-bootavel)
+    - [Conexão com a internet](#conexão-com-a-internet)
+      - [Ethernet (cabo)](#ethernet-cabo)
+      - [Wireless](#wireless)
+    - [Particionamento](#particionamento)
+      - [BIOS com MBR](#bios-com-mbr)
+      - [UEFI com GPT](#uefi-com-gpt)
+  - [Instalação](#instalação)
+  - [Execução](#execução)
+  - [O que será instalado](#o-que-será-instalado)
+  - [Features](#features)
+  - [Features em implementação](#features-em-implementação)
+  - [Licença](#licença)
+  - [Agradecimentos](#agradecimentos)
 
 
 
