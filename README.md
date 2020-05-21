@@ -1,29 +1,15 @@
 # Fred's Arch Linux Installer
 
-
 Script interativo, em português do Brasil, que possibilita instalar o Arch Linux de forma pratica e rápida, sem a necessidade de ficar digitando comandos e configurando tudo manualmente. :)
 
-**Índice**
-
-- [Fred's Arch Linux Installer](#freds-arch-linux-installer)
-  - [Antes de começar](#antes-de-começar)
-    - [Sistema x64](#sistema-x64)
-    - [ISO do Arch Linux](#iso-do-arch-linux)
-    - [Mídia bootavel](#mídia-bootavel)
-    - [Conexão com a internet](#conexão-com-a-internet)
-      - [Ethernet (cabo)](#ethernet-cabo)
-      - [Wireless](#wireless)
-    - [Particionamento](#particionamento)
-      - [BIOS com MBR](#bios-com-mbr)
-      - [UEFI com GPT](#uefi-com-gpt)
-  - [Instalação](#instalação)
-  - [Execução](#execução)
-  - [O que será instalado](#o-que-será-instalado)
-  - [Features](#features)
-  - [Features em implementação](#features-em-implementação)
-  - [Licença](#licença)
-  - [Agradecimentos](#agradecimentos)
-
+1. [Antes de começar](#Antes-de-começar)
+2. [Instalação](#Instalação)
+3. [Execução](#Execução)
+4. [O que será instalado](#O-que-será-instalado)
+5. [Features](#Features)
+6. [Features em implementação](#Features-em-implementação)
+7. [Licença](#Licença)
+8. [Agradecimentos](#Agradecimentos)
 
 
 ## Antes de começar
@@ -97,7 +83,6 @@ Exemplo básico de layout para o particionamento do disco:
 **Obs**: Atualmente o script permite criar partições para os pontos de montagem **/** (root), **boot**, **swap** e **home**. Em breve outras opções serão disponibilizadas.
 
 
-
 ## Instalação
 
 Ao entrar na live do Arch Linux, basta usar o comando a seguir para baixar o script:
@@ -105,11 +90,9 @@ Ao entrar na live do Arch Linux, basta usar o comando a seguir para baixar o scr
 `git clone https://github.com/fredericofavaro/fali`
 
 
-
 ## Execução 
 
 `bash ./fali/core.sh`
-
 
 
 ## O que será instalado
@@ -123,7 +106,6 @@ Ao entrar na live do Arch Linux, basta usar o comando a seguir para baixar o scr
 - efibootmgr (Apenas em sistemas EFI)
 
 
-
 ## Features
 
 - [x] Menu interativo e simplificado
@@ -132,7 +114,6 @@ Ao entrar na live do Arch Linux, basta usar o comando a seguir para baixar o scr
 - [x] Seleção do mirrorlist (Padrão, Manual ou baseado nos mais rápidos)
 - [x] Suporte a sistemas legado (BIOS) e UEFI (Configuração automatizada)
 - [x] Instalação e configuração do sistema base
-
 
 
 ## Features em implementação
@@ -160,14 +141,11 @@ Ao entrar na live do Arch Linux, basta usar o comando a seguir para baixar o scr
   ...
 
 
-
 ## Licença 
 
 LGPL3.
 
 
-
 ## Agradecimentos
 
 Ao meu amigo **Murilo de Morais**.
-
