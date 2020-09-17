@@ -136,7 +136,7 @@ editor_texto () {
                 echo -e "      Definindo \e[1mNano\e[0m como editor de texto padrão!"
                 sleep 2
                 break
-                 ;;
+                ;;
             2)
                 editor=vim
                 echo ""
@@ -507,7 +507,6 @@ partition () {
             echo -e "      \e[1m$cont\e[0m - $particao"
             option+="|$cont"
         done
-        #echo "$option"
         echo ""
         echo -e "      \e[1m0\e[0m - Voltar"
         read -s -n1 op_particao
@@ -551,7 +550,7 @@ filesystem () {
     done
     echo ""
     echo -e "      \e[1m0\e[0m - Voltar"
-    read -s -n1 op_filesys_type
+    read -s -n2 op_filesys_type
     case $op_filesys_type in
         1|2|3|4|5|6|7|8|9|10|11|12)
             # Gera os parametros para cada ponto de montagem
@@ -704,8 +703,6 @@ install () {
     if $swap; then
     mkswap -L "Swap" /dev/$swap_partition && swapon /dev/$swap_partition
     fi
-    # Atualizar os mirrors
-   # pacman -Syu --noconfirm pacman-mirrorlist
     # Instalando o sistema
     pacstrap /mnt base base-devel linux linux-firmware $editor
     # Gerarando o arquivo fstab
@@ -737,6 +734,7 @@ pos_config_file () {
 }
 
 ### Menu de pos instalacao
+# Aqui o usuario saiu da iso de instalacao, logo nenhuma variavel antes determinada existe. Por isso do arquivo de configuração criado na funcao anterior. Apartir daqui as variaveis serao baseadas no arquivo /FALI/config
 pos_install () {
     while true; do
         title "                       Pós instalação                       "
@@ -766,9 +764,10 @@ pos_install () {
         # Hostname
         #echo nome_da_maquina > /etc/hostname
         # Instalacao do bootloader
-        if [[ $bootefi == "/boot/efi" ]]; then #ajustar
+        bootefi=$(sed -n '8p' ./FALI/config)
+        if [[ $bootefi == "/boot/efi" ]]; then
             pacman -Syu grub efibootmgr
-            grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id="Arch linux" --removable
+            grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id="Arch linux" --removable
         else
             pacman -Syu grub
             grub_disk=$(sed -n '10s/.//4;10p' ./FALI/config)
@@ -786,24 +785,6 @@ pos_install () {
         exit
     done
 }
-
-
-### FAZER MENU
-# Instalar wifi
-#pacman -S wireless_tools wpa_supplicant wpa_actiond dialog
-
-
-# Dual boot
-# pacman -Syu os-prober
-# grub-mkconfig -o /boot/grub/grub.cfg
-
-# Suporte repositorios 86x
-        #nano /etc/pacman.conf
-        #Descomentar Multilib
-        #pacman -Syy
-        #pacman -Syu
-
-
 
 #-----------------------------------------------#
 #                   APLICACAO                   #
